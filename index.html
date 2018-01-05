@@ -1,0 +1,30 @@
+<body>
+  <script>
+    const code = `
+      self.onmessage = (event) => {
+        const ctx = event.data.canvas.getContext('2d');
+        const bc = new BroadcastChannel('test');
+        bc.onmessage = () => {
+          ctx.fillText('Test', 0, 0);
+          ctx.commit();
+        };
+      };
+    `;
+
+    function createWorker() {
+      const canvas = document.createElement('canvas');
+      document.body.appendChild(canvas);
+      const offscreen = canvas.transferControlToOffscreen();
+      const worker = new Worker(URL.createObjectURL(new Blob([code])));
+      worker.postMessage({ canvas: offscreen }, [offscreen]);
+    }
+
+    createWorker();
+    createWorker();
+
+    setInterval(() => {
+      const bc = new BroadcastChannel('test');
+      bc.postMessage({});
+    }, 1000);
+  </script>
+</body>
